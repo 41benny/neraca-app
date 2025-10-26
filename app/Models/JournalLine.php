@@ -26,6 +26,9 @@ class JournalLine extends Model
         'invoice_id',
         'project_id',
         'vehicle_id',
+        'party_type',
+        'party_code',
+        'party_name',
         'meta',
     ];
 

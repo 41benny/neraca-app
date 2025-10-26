@@ -19,6 +19,9 @@ class JournalRowData
         public readonly ?string $invoiceId = null,
         public readonly ?string $projectId = null,
         public readonly ?string $vehicleId = null,
+        public readonly ?string $partyType = null,
+        public readonly ?string $partyCode = null,
+        public readonly ?string $partyName = null,
         public readonly array $meta = [],
     ) {}
 }

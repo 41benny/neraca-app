@@ -1,6 +1,6 @@
 @props(['transactions' => []])
 
-<div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+<div class="bg-white dark:bg-dark-bg-secondary overflow-hidden shadow-sm sm:rounded-lg mb-6 border border-gray-100 dark:border-gray-700">
     <div class="p-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4">{{ $title ?? 'Daftar Transaksi' }}</h3>
         <div class="overflow-x-auto">

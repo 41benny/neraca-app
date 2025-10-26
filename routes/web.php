@@ -1,10 +1,17 @@
 <?php
 
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\CashTransactionController;
+use App\Http\Controllers\CoaImportController;
 use App\Http\Controllers\JournalImportController;
+use App\Http\Controllers\JournalLineController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Reports\ArApSummaryController;
 use App\Http\Controllers\Reports\BalanceSheetController;
 use App\Http\Controllers\Reports\IncomeStatementController;
+use App\Http\Controllers\TemplateDownloadController;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +60,54 @@ Route::get('reports/balance-sheet', BalanceSheetController::class)
 
 Route::get('reports/income-statement', IncomeStatementController::class)
     ->name('reports.income-statement');
+
+// Halaman UI untuk laporan (HTML)
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('reports/balance-sheet/view', function () {
+        $asOf = request()->date('as_of') ?? now();
+        $service = App::make(\App\Services\FinancialReportService::class);
+        $data = $service->balanceSheet($asOf, request('branch_code'));
+
+        return view('reports.balance-sheet', ['data' => $data]);
+    })->name('reports.balance-sheet.view');
+
+    Route::get('reports/income-statement/view', function () {
+        $start = request()->date('start_date') ?? now()->startOfMonth();
+        $end = request()->date('end_date') ?? now();
+        $filters = request()->only(['branch_code', 'invoice_id', 'project_id', 'vehicle_id']);
+        $service = App::make(\App\Services\FinancialReportService::class);
+        $data = $service->incomeStatement($start, $end, $filters);
+
+        return view('reports.income-statement', ['data' => $data]);
+    })->name('reports.income-statement.view');
+
+    // AR/AP Summary (UI)
+    Route::get('reports/ar-ap', ArApSummaryController::class)->name('reports.ar-ap');
+
+    // Import COA + Saldo Awal
+    Route::get('accounts/import', function () {
+        return view('accounts.import');
+    })->name('accounts.imports.create');
+
+    Route::post('accounts/import', CoaImportController::class)
+        ->name('accounts.imports.store');
+
+    // Download templates (Excel only)
+    Route::get('templates/coa.xlsx', [TemplateDownloadController::class, 'coaXlsx'])->name('templates.coa.xlsx');
+    Route::get('templates/journal.xlsx', [TemplateDownloadController::class, 'journalXlsx'])->name('templates.journal.xlsx');
+
+    // Master Akun manual
+    Route::resource('accounts', AccountController::class)->except(['show']);
+
+    // Jurnal Lines (lihat & edit)
+    Route::get('journals', [JournalLineController::class, 'index'])->name('journals.index');
+    Route::get('journals/{journalLine}/edit', [JournalLineController::class, 'edit'])->name('journals.edit');
+    Route::put('journals/{journalLine}', [JournalLineController::class, 'update'])->name('journals.update');
+
+    // Kas & Bank (manual entry -> auto journal)
+    Route::get('cash-transactions/create', [CashTransactionController::class, 'create'])->name('cash.create');
+    Route::post('cash-transactions', [CashTransactionController::class, 'store'])->name('cash.store');
+});
 
 Route::get('/dashboard', function () {
     return view('dashboard');

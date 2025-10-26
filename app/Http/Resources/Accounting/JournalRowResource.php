@@ -26,6 +26,9 @@ class JournalRowResource extends JsonResource
             'invoice_id' => $this->resource->invoiceId,
             'project_id' => $this->resource->projectId,
             'vehicle_id' => $this->resource->vehicleId,
+            'party_type' => $this->resource->partyType,
+            'party_code' => $this->resource->partyCode,
+            'party_name' => $this->resource->partyName,
             'meta' => $this->resource->meta,
         ];
     }
